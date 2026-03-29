@@ -13,7 +13,7 @@ print(f"Collecting commit diffs for {TODAY}...")
 commits = requests.get(
     f"https://api.github.com/repos/{REPO}/commits",
     headers=HEADERS,
-    params={"per_page": 30}
+    params={"per_page": 500}
 ).json()
 
 file_data = []
