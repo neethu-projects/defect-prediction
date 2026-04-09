@@ -2,10 +2,14 @@ import requests
 import pandas as pd
 from datetime import datetime
 from config import TOKEN
+import sqlite3
+import os
 
 REPO = "scikit-learn/scikit-learn"
 HEADERS = {"Authorization": f"token {TOKEN}"}
 TODAY = datetime.now().strftime("%Y-%m-%d")
+
+SAVE_TO_DB = False 
 
 print(f"Collecting commit diffs for {TODAY}...")
 
@@ -48,6 +52,22 @@ for commit in commits:
                     "date":       date
                 })
 
-# Step 4 - Save to CSV
-pd.DataFrame(file_data).to_csv(f"data/diffs_{TODAY}.csv", index=False)
-print(f"✅ Saved {len(file_data)} file changes to data/diffs_{TODAY}.csv")
+df = pd.DataFrame(file_data)
+
+#Save to DB if enabled
+if SAVE_TO_DB:
+    #Saving to SQLite database - VM specific
+    os.makedirs("data", exist_ok=True)
+    conn = sqlite3.connect("data/defect_data.db")
+    df.to_sql("diffs", conn, if_exists="append", index=False)
+    total = pd.read_sql("SELECT COUNT(*) FROM diffs", conn).iloc[0]["total"]
+    conn.close()
+    print(f"Saved {len(file_data)} rows to database.") 
+    print(f"Total rows in database: {total}")
+
+else:
+    #Local CSV saving - works in any environment
+    os.makedirs("data", exist_ok=True)
+    df.to_csv(f"data/diffs_{TODAY}.csv", index=False)
+    print(f"Saved {len(file_data)} file changes to data/diffs_{TODAY}.csv")
+
