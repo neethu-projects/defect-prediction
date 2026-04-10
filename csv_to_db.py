@@ -19,26 +19,26 @@ else:
 
     for file in csv_files:
         df = pd.read_csv(file)
-        df.to_sql("diffs", conn, if_exists="append", index=False)
+        df.to_sql("raw_diffs", conn, if_exists="append", index=False)
         total_rows += len(df)
         print(f"Loaded {file} — {len(df)} rows")
 
     # REMOVE DUPLICATES FROM DATABASE
     print("\nRemoving duplicates...")
     conn.execute("""
-        DELETE FROM diffs
+        DELETE FROM raw_diffs
         WHERE rowid NOT IN (
             SELECT MIN(rowid)
-            FROM diffs
+            FROM raw_diffs
             GROUP BY filename, date, author
         )
     """)
     conn.commit()
 
     # SHOW FINAL COUNT
-    total = pd.read_sql("SELECT COUNT(*) as total FROM diffs", conn).iloc[0]["total"]
+    total = pd.read_sql("SELECT COUNT(*) as total FROM raw_diffs", conn).iloc[0]["total"]
     print(f"\n--- Summary ---")
-    print(f"CSV files loaded : {len(csv_files)}")
+    print(f"All CSVs loaded to raw_diffs table : {len(csv_files)}")
     print(f"Rows inserted    : {total_rows}")
     print(f"Rows in database : {total}")
     print(f"All data loaded to data/defect_data.db")
