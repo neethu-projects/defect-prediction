@@ -5,29 +5,29 @@ from config import TOKEN
 import sqlite3
 import os
 
-REPO = "scikit-learn/scikit-learn"
+REPO    = "scikit-learn/scikit-learn"
 HEADERS = {"Authorization": f"token {TOKEN}"}
-TODAY = datetime.now().strftime("%Y-%m-%d")
+TODAY   = datetime.now().strftime("%Y-%m-%d")
 
-SAVE_TO_DB = False 
+os.makedirs("data", exist_ok=True)
 
 print(f"Collecting commit diffs for {TODAY}...")
 
-# Step 1 - Get list of recent commits
+# Step 1 - Get recent commits (max 100 per page)
 commits = requests.get(
     f"https://api.github.com/repos/{REPO}/commits",
     headers=HEADERS,
-    params={"per_page": 500}
+    params={"per_page": 30}
 ).json()
 
 file_data = []
 
 # Step 2 - For each commit get the files changed
 for commit in commits:
-    sha    = commit["sha"]
+    sha     = commit["sha"]
     message = commit["commit"]["message"][:80]
-    date   = commit["commit"]["author"]["date"]
-    author = commit["commit"]["author"]["name"]
+    date    = commit["commit"]["author"]["date"]
+    author  = commit["commit"]["author"]["name"]
 
     # Check if this commit is a bug fix
     is_bug_fix = "fix" in message.lower() or "#" in message
@@ -38,7 +38,7 @@ for commit in commits:
         headers=HEADERS
     ).json()
 
-    # Step 3 - For each file changed in this commit
+    # Step 3 - For each Python file changed in this commit
     if "files" in detail:
         for file in detail["files"]:
             if file["filename"].endswith(".py"):
@@ -52,22 +52,28 @@ for commit in commits:
                     "date":       date
                 })
 
+# Step 4 - Save to database
+conn = sqlite3.connect("data/defect_data.db")
 df = pd.DataFrame(file_data)
+df.to_sql("raw_diffs", conn, if_exists="append", index=False)
 
-#Save to DB if enabled
-if SAVE_TO_DB:
-    #Saving to SQLite database - VM specific
-    os.makedirs("data", exist_ok=True)
-    conn = sqlite3.connect("data/defect_data.db")
-    df.to_sql("diffs", conn, if_exists="append", index=False)
-    total = pd.read_sql("SELECT COUNT(*) FROM diffs", conn).iloc[0]["total"]
-    conn.close()
-    print(f"Saved {len(file_data)} rows to database.") 
-    print(f"Total rows in database: {total}")
+# Step 5 - Remove duplicates
+conn.execute("""
+    DELETE FROM raw_diffs
+    WHERE rowid NOT IN (
+        SELECT MIN(rowid)
+        FROM raw_diffs
+        GROUP BY filename, date, author
+    )
+""")
+conn.commit()
 
-else:
-    #Local CSV saving - works in any environment
-    os.makedirs("data", exist_ok=True)
-    df.to_csv(f"data/diffs_{TODAY}.csv", index=False)
-    print(f"Saved {len(file_data)} file changes to data/diffs_{TODAY}.csv")
+# Step 6 - Show total count
+total = pd.read_sql(
+    "SELECT COUNT(*) as total FROM raw_diffs", conn
+).iloc[0]["total"]
 
+conn.close()
+
+print(f"Saved {len(file_data)} rows to raw_diffs table")
+print(f"Total rows in database: {total}")
