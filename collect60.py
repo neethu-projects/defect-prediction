@@ -62,4 +62,4 @@ while True:
 
 # Save to CSV
 pd.DataFrame(file_data).to_csv("data/diffs_historical.csv", index=False)
-print(f"\n✅ Saved {len(file_data)} file changes to data/diffs_historical.csv")
+print(f"\nSaved {len(file_data)} file changes to data/diffs_historical.csv")
