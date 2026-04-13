@@ -16,23 +16,6 @@ Data is collected from the following GitHub repositories via the
 GitHub REST API:
 - scikit-learn/scikit-learn
 
-## Project Structure
-
-defect-prediction/
-│
-├── collect.py              # Collects commit diffs from GitHub API daily
-├── load_existing_csvs.py   # Loads historical CSV files into database
-├── features.py             # Extracts features from raw data
-├── tests.py                # Unit tests and integration tests
-├── requirements.txt        # Required Python libraries
-├── config.py               # GitHub API token (not uploaded to GitHub)
-└── data/
-    ├── defect_data.db      # SQLite database
-    │   ├── raw_diffs       # Table 1 - raw collected data
-    │   └── feature_dataset # Table 2 - extracted features
-    └── diffs_YYYY-MM-DD.csv # Daily CSV snapshots
-
-
 ## How It Works
 
 ### Step 1 - Data Collection (collect.py)
