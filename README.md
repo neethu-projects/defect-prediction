@@ -96,6 +96,8 @@ python tests.py
 ## Requirements
 requests
 pandas
+scikit-learn
+matplotlib
 
 ## Data Ethics
 All data is collected from public open source repositories
