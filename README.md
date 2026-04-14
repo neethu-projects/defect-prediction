@@ -84,9 +84,6 @@ pip install requests pandas
 ### Collect data daily
 python collect.py
 
-### Load existing CSVs to database (run once)
-python load_existing_csvs.py
-
 ### Extract features
 python features.py
 
