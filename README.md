@@ -59,7 +59,7 @@ tests on the database to verify data quality and pipeline integrity.
 | is_bug_fix | True if commit was a bug fix |
 | author | Developer who made the commit |
 | date | Date of the commit |
-| repo | Repository the commit came from |
+
 
 ### Table 2 — feature_dataset
 | Column | Description |
