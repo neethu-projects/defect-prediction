@@ -106,6 +106,8 @@ or personal user data is collected.
 This project was developed with assistance from Claude AI
 (Anthropic) for code guidance, debugging, and documentation.
 
+Reference: https://claude.ai/share/4b669486-827a-4261-96ac-5c22437c056e
+
 
 ## Author
 Neethu Sreekumar (20092130)
